@@ -85,6 +85,10 @@ STRIPE_CANCEL_URL=http://localhost:8080/pricing?payment=cancelled
 # Google Maps API (Optional)
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 
+# Gemini AI (Required for AI features)
+# Get your API key from https://makersuite.google.com/app/apikey
+GEMINI_API_KEY=AIzaSyDs0x6XGEu13erdACrEwjIOir0fBTvx9gs
+
 # Platform Settings
 PLATFORM_COMMISSION_PERCENT=5
 ```

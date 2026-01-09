@@ -28,6 +28,7 @@ interface JWTPayload {
 
 /**
  * Authentication middleware - verifies JWT token
+ * In development mode, allows mock tokens for testing
  */
 export async function authenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -39,6 +40,20 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
         }
 
         const token = authHeader.split(' ')[1];
+
+        // In development, allow mock tokens
+        if (env.NODE_ENV === 'development' && token.startsWith('mock_token_')) {
+            // Extract user info from localStorage if possible, or use default
+            // For now, create a mock user for development
+            req.user = {
+                id: 'dev-user-id',
+                email: 'dev@athleon.com',
+                name: 'Dev User',
+                role: 'athlete',
+            };
+            next();
+            return;
+        }
 
         try {
             const decoded = jwt.verify(token, env.JWT_SECRET) as JWTPayload;

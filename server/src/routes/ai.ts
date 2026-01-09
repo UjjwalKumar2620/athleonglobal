@@ -1,9 +1,12 @@
 import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { authenticate } from '../middleware/auth.js';
 import { athleteOnly } from '../middleware/roleGuard.js';
 import { analyzeVideo, generateChatResponse } from '../services/ai.js';
+import { env } from '../config/env.js';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -11,16 +14,52 @@ const prisma = new PrismaClient();
 // Constants
 const FREE_MONTHLY_ANALYSES = 2;
 
+// Configure multer for file uploads
+const uploadDir = path.join(process.cwd(), 'uploads', 'videos');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, `video-${uniqueSuffix}${path.extname(file.originalname)}`);
+    },
+});
+
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 100 * 1024 * 1024, // 100MB limit
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = /mp4|mov|avi|mkv|webm/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+
+        if (mimetype && extname) {
+            return cb(null, true);
+        } else {
+            cb(new Error('Only video files are allowed (mp4, mov, avi, mkv, webm)'));
+        }
+    },
+});
+
 /**
  * POST /ai/upload-video
  * Upload and analyze a video (Athletes only)
  */
-router.post('/upload-video', authenticate, athleteOnly, async (req: Request, res: Response) => {
+router.post('/upload-video', authenticate, athleteOnly, upload.single('video'), async (req: Request, res: Response) => {
     try {
-        const { videoUrl, videoTitle } = req.body;
+        const videoFile = req.file;
+        const { videoTitle } = req.body;
 
-        if (!videoUrl) {
-            res.status(400).json({ error: 'Video URL is required' });
+        // Check if file was uploaded or if videoUrl is provided
+        if (!videoFile && !req.body.videoUrl) {
+            res.status(400).json({ error: 'Video file or URL is required' });
             return;
         }
 
@@ -34,6 +73,10 @@ router.post('/upload-video', authenticate, athleteOnly, async (req: Request, res
         });
 
         if (!user) {
+            // Clean up uploaded file if user not found
+            if (videoFile) {
+                fs.unlinkSync(videoFile.path);
+            }
             res.status(404).json({ error: 'User not found' });
             return;
         }
@@ -58,6 +101,10 @@ router.post('/upload-video', authenticate, athleteOnly, async (req: Request, res
             // Free plan check
             if (user.subscription?.plan?.slug === 'free' && monthlyAnalyses >= FREE_MONTHLY_ANALYSES) {
                 if (credits < 1) {
+                    // Clean up uploaded file
+                    if (videoFile) {
+                        fs.unlinkSync(videoFile.path);
+                    }
                     res.status(403).json({
                         error: 'No AI credits remaining',
                         message: `You've used your ${FREE_MONTHLY_ANALYSES} free analyses this month. Purchase more credits or upgrade to Pro.`,
@@ -73,25 +120,42 @@ router.post('/upload-video', authenticate, athleteOnly, async (req: Request, res
             }
         }
 
-        // Run AI analysis (mock)
-        const analysis = analyzeVideo(videoTitle);
+        // Determine video URL (uploaded file path or provided URL)
+        const videoUrl = videoFile ? `/uploads/videos/${path.basename(videoFile.path)}` : req.body.videoUrl;
+
+        // Run AI analysis
+        const analysis = await analyzeVideo(videoFile?.path, videoTitle);
 
         // Save analysis results
         const usageLog = await prisma.aIUsageLog.create({
             data: {
                 userId: user.id,
                 videoUrl,
-                videoTitle: videoTitle || 'Untitled Video',
+                videoTitle: videoTitle || videoFile?.originalname || 'Untitled Video',
                 score: analysis.score,
                 insights: analysis.insights,
                 skillBreakdown: analysis.skillBreakdown,
             },
         });
 
+        // Get or create athlete profile
+        let athleteProfile = await prisma.athleteProfile.findUnique({
+            where: { userId: user.id },
+        });
+
+        if (!athleteProfile) {
+            athleteProfile = await prisma.athleteProfile.create({
+                data: {
+                    userId: user.id,
+                    sports: [],
+                },
+            });
+        }
+
         // Also save to performance history
         await prisma.performanceData.create({
             data: {
-                athleteProfileId: (await prisma.athleteProfile.findUnique({ where: { userId: user.id } }))?.id || '',
+                athleteProfileId: athleteProfile.id,
                 overallScore: analysis.score,
                 speedScore: analysis.skillBreakdown.find((s) => s.skill === 'Speed')?.value || 0,
                 techniqueScore: analysis.skillBreakdown.find((s) => s.skill === 'Technique')?.value || 0,
@@ -114,7 +178,15 @@ router.post('/upload-video', authenticate, athleteOnly, async (req: Request, res
         });
     } catch (error) {
         console.error('AI upload error:', error);
-        res.status(500).json({ error: 'Failed to analyze video' });
+        // Clean up uploaded file on error
+        if (req.file) {
+            try {
+                fs.unlinkSync(req.file.path);
+            } catch (unlinkError) {
+                console.error('Failed to clean up file:', unlinkError);
+            }
+        }
+        res.status(500).json({ error: 'Failed to analyze video', message: error instanceof Error ? error.message : 'Unknown error' });
     }
 });
 
@@ -154,6 +226,7 @@ router.get('/results', authenticate, athleteOnly, async (req: Request, res: Resp
             results: results.map((r) => ({
                 id: r.id,
                 videoTitle: r.videoTitle,
+                videoUrl: r.videoUrl,
                 score: r.score,
                 insights: r.insights,
                 skillBreakdown: r.skillBreakdown,
@@ -178,9 +251,9 @@ router.get('/results', authenticate, athleteOnly, async (req: Request, res: Resp
 
 /**
  * POST /ai/chat
- * AI Coach chatbot (Athletes only)
+ * AI Coach chatbot (All authenticated users)
  */
-router.post('/chat', authenticate, athleteOnly, async (req: Request, res: Response) => {
+router.post('/chat', authenticate, async (req: Request, res: Response) => {
     try {
         const { message } = req.body;
 
@@ -189,13 +262,21 @@ router.post('/chat', authenticate, athleteOnly, async (req: Request, res: Respon
             return;
         }
 
-        // Get user's recent analysis for context
-        const recentAnalysis = await prisma.aIUsageLog.findFirst({
-            where: { userId: req.user!.id },
-            orderBy: { createdAt: 'desc' },
-        });
+        // Get user's recent analysis for context (if athlete)
+        let recentAnalysis = null;
+        if (req.user!.role === 'athlete') {
+            try {
+                recentAnalysis = await prisma.aIUsageLog.findFirst({
+                    where: { userId: req.user!.id },
+                    orderBy: { createdAt: 'desc' },
+                });
+            } catch (dbError) {
+                console.error('Error fetching recent analysis:', dbError);
+                // Continue without recent analysis
+            }
+        }
 
-        const response = generateChatResponse(message, {
+        const response = await generateChatResponse(message, {
             userName: req.user!.name,
             recentScore: recentAnalysis?.score || undefined,
             skills: (recentAnalysis?.skillBreakdown as any[]) || undefined,
@@ -207,7 +288,12 @@ router.post('/chat', authenticate, athleteOnly, async (req: Request, res: Respon
         });
     } catch (error) {
         console.error('AI chat error:', error);
-        res.status(500).json({ error: 'Failed to generate response' });
+        const errorMessage = error instanceof Error ? error.message : 'Failed to generate response';
+        res.status(500).json({ 
+            error: 'Failed to generate response',
+            message: errorMessage,
+            details: env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
+        });
     }
 });
 

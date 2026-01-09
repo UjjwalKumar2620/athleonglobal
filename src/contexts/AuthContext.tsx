@@ -29,87 +29,208 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user data for demo
-const mockUsers: Record<string, User & { password: string }> = {
-  'demo@athleon.com': {
-    id: '1',
-    email: 'demo@athleon.com',
-    password: 'demo123',
-    name: 'Ujjwal Sharma',
-    role: 'athlete',
-    avatar: '/placeholder.svg',
-    sport: 'Cricket',
-    location: 'Delhi, India',
-    bio: 'Passionate cricketer with 8+ years of experience. Captain of Delhi Premier League team.',
-    followers: 2450,
-    following: 180,
-    credits: 50,
-    subscription: 'athlete_pro',
-  },
-};
-
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Check for existing session on mount
   useEffect(() => {
-    // Check for stored session
-    const storedUser = localStorage.getItem('athleon_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    const checkAuth = async () => {
+      const token = localStorage.getItem('athleon_token');
+      const storedUser = localStorage.getItem('athleon_user');
+
+      if (token && storedUser) {
+        try {
+          // Try to verify token with backend
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const userData = await response.json();
+            setUser({
+              id: userData.id,
+              email: userData.email,
+              name: userData.name,
+              role: userData.role as UserRole,
+              avatar: userData.avatar,
+              credits: userData.credits,
+              subscription: userData.subscription,
+            });
+          } else {
+            // Token invalid, but fallback to stored user for mock auth
+            try {
+              setUser(JSON.parse(storedUser));
+            } catch {
+              localStorage.removeItem('athleon_token');
+              localStorage.removeItem('athleon_user');
+            }
+          }
+        } catch {
+          // Backend not available, use stored user (mock auth mode)
+          console.log('Backend not available, using stored user data');
+          try {
+            setUser(JSON.parse(storedUser));
+          } catch {
+            localStorage.removeItem('athleon_token');
+            localStorage.removeItem('athleon_user');
+          }
+        }
+      } else if (storedUser) {
+        // Fallback to stored user if no token (for backward compatibility)
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch {
+          localStorage.removeItem('athleon_user');
+        }
+      }
+
+      setIsLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      // Try backend API first
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
 
-    const mockUser = mockUsers[email];
-    if (mockUser && mockUser.password === password) {
-      const { password: _, ...userWithoutPassword } = mockUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem('athleon_user', JSON.stringify(userWithoutPassword));
-    } else {
-      // For demo, create a new user on any login
-      const newUser: User = {
-        id: Date.now().toString(),
-        email,
-        name: email.split('@')[0],
-        role: 'athlete',
-        credits: 10,
-        subscription: 'free',
-        followers: 0,
-        following: 0,
-      };
-      setUser(newUser);
-      localStorage.setItem('athleon_user', JSON.stringify(newUser));
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem('athleon_token', data.token);
+          localStorage.setItem('athleon_user', JSON.stringify(data.user));
+          setUser({
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.name,
+            role: data.user.role as UserRole,
+            credits: data.user.credits,
+            subscription: data.user.subscription,
+          });
+          return;
+        }
+      } catch {
+        // Backend not available, fallback to mock auth
+        console.log('Backend not available, using mock authentication');
+      }
+
+      // Mock authentication fallback
+      const storedUsers = JSON.parse(localStorage.getItem('athleon_users') || '[]');
+      const foundUser = storedUsers.find((u: { email: string; password: string }) =>
+        u.email === email && u.password === password
+      );
+
+      if (!foundUser) {
+        throw new Error('Invalid email or password');
+      }
+
+      const mockToken = `mock_token_${Date.now()}`;
+      localStorage.setItem('athleon_token', mockToken);
+      localStorage.setItem('athleon_user', JSON.stringify(foundUser));
+
+      setUser({
+        id: foundUser.id,
+        email: foundUser.email,
+        name: foundUser.name,
+        role: foundUser.role as UserRole,
+        credits: foundUser.credits || 10,
+        subscription: foundUser.subscription || 'free',
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const signup = async (email: string, password: string, name: string, role: UserRole): Promise<void> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      // Try backend API first
+      try {
+        const response = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password, name, role }),
+        });
 
-    const newUser: User = {
-      id: Date.now().toString(),
-      email,
-      name,
-      role,
-      credits: 10,
-      subscription: 'free',
-      followers: 0,
-      following: 0,
-    };
-    setUser(newUser);
-    localStorage.setItem('athleon_user', JSON.stringify(newUser));
-    setIsLoading(false);
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem('athleon_token', data.token);
+          localStorage.setItem('athleon_user', JSON.stringify(data.user));
+          setUser({
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.name,
+            role: data.user.role as UserRole,
+            credits: 10,
+            subscription: 'free',
+          });
+          return;
+        }
+      } catch {
+        // Backend not available, fallback to mock auth
+        console.log('Backend not available, using mock authentication');
+      }
+
+      // Mock signup fallback
+      const storedUsers = JSON.parse(localStorage.getItem('athleon_users') || '[]');
+
+      // Check if user already exists
+      if (storedUsers.some((u: { email: string }) => u.email === email)) {
+        throw new Error('Email already registered');
+      }
+
+      const newUser = {
+        id: `user_${Date.now()}`,
+        email,
+        password,
+        name,
+        role,
+        credits: 10,
+        subscription: 'free' as const,
+      };
+
+      storedUsers.push(newUser);
+      localStorage.setItem('athleon_users', JSON.stringify(storedUsers));
+
+      const mockToken = `mock_token_${Date.now()}`;
+      localStorage.setItem('athleon_token', mockToken);
+      localStorage.setItem('athleon_user', JSON.stringify(newUser));
+
+      setUser({
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+        credits: newUser.credits,
+        subscription: newUser.subscription,
+      });
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('athleon_token');
     localStorage.removeItem('athleon_user');
   };
 

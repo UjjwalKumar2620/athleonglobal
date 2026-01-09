@@ -19,7 +19,9 @@ const app: Express = express();
 
 // CORS configuration
 app.use(cors({
-    origin: env.FRONTEND_URL,
+    origin: env.NODE_ENV === 'development' 
+        ? ['http://localhost:5173', 'http://localhost:8080', env.FRONTEND_URL]
+        : env.FRONTEND_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -31,6 +33,9 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), stri
 // JSON body parser for other routes
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'));
 
 // Health check
 app.get('/api/health', (_req: Request, res: Response) => {

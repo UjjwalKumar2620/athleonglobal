@@ -253,6 +253,123 @@ const CoachProfile: React.FC<{ user: any }> = ({ user }) => {
   );
 };
 
+const CreatorProfile: React.FC<{ user: any }> = ({ user }) => (
+  <>
+    {/* Profile Header */}
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border p-6 rounded-2xl mb-8">
+      <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-4xl font-bold text-primary-foreground">
+          {user?.name?.charAt(0) || 'C'}
+        </div>
+        <div className="flex-1 text-center md:text-left">
+          <h1 className="text-2xl font-bold mb-1 text-foreground">{user?.name || 'Content Creator'}</h1>
+          <p className="text-primary font-medium mb-2 flex items-center justify-center md:justify-start gap-2">
+            <Video className="h-4 w-4" /> Content Creator
+          </p>
+          <div className="flex items-center justify-center md:justify-start gap-4 text-sm text-muted-foreground mb-4">
+            <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> Delhi, India</span>
+            <span className="flex items-center gap-1"><Users className="h-4 w-4" /> 2.5K followers</span>
+          </div>
+          <p className="text-muted-foreground max-w-lg">Sports content creator sharing training tips, match highlights, and athlete stories.</p>
+        </div>
+        <Button variant="outline"><Edit className="h-4 w-4 mr-2" /> Edit Profile</Button>
+      </div>
+    </motion.div>
+
+    {/* Stats */}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      {[
+        { label: 'Videos Created', value: '24', icon: Video },
+        { label: 'Total Views', value: '97.7K', icon: Users },
+        { label: 'Followers', value: '2.5K', icon: Star },
+        { label: 'Avg Rating', value: '4.8', icon: Trophy },
+      ].map((stat) => (
+        <div key={stat.label} className="bg-card border border-border p-4 rounded-xl">
+          <div className="flex items-center gap-3 mb-2">
+            <stat.icon className="h-5 w-5 text-primary" />
+            <span className="text-sm text-muted-foreground">{stat.label}</span>
+          </div>
+          <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+        </div>
+      ))}
+    </div>
+
+    {/* Recent Videos */}
+    <h2 className="text-xl font-semibold mb-4 text-foreground">My Videos</h2>
+    <div className="grid md:grid-cols-3 gap-6">
+      {['Training Tips Vol. 1', 'Match Highlights', 'Athlete Interview'].map((title, i) => (
+        <div key={i} className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="aspect-video bg-secondary flex items-center justify-center"><Video className="h-12 w-12 text-muted-foreground" /></div>
+          <div className="p-4">
+            <h4 className="font-medium text-foreground">{title}</h4>
+            <p className="text-sm text-muted-foreground">{(i + 1) * 12}k views</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </>
+);
+
+const ViewerProfile: React.FC<{ user: any }> = ({ user }) => (
+  <>
+    {/* Profile Header */}
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border p-6 rounded-2xl mb-8">
+      <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-4xl font-bold text-primary-foreground">
+          {user?.name?.charAt(0) || 'V'}
+        </div>
+        <div className="flex-1 text-center md:text-left">
+          <h1 className="text-2xl font-bold mb-1 text-foreground">{user?.name || 'Sports Fan'}</h1>
+          <p className="text-primary font-medium mb-2 flex items-center justify-center md:justify-start gap-2">
+            <Users className="h-4 w-4" /> Sports Enthusiast
+          </p>
+          <div className="flex items-center justify-center md:justify-start gap-4 text-sm text-muted-foreground mb-4">
+            <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> Delhi, India</span>
+            <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> Member since 2024</span>
+          </div>
+          <p className="text-muted-foreground max-w-lg">Passionate sports fan following athletes and events.</p>
+        </div>
+        <Button variant="outline"><Edit className="h-4 w-4 mr-2" /> Edit Profile</Button>
+      </div>
+    </motion.div>
+
+    {/* Stats */}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      {[
+        { label: 'Athletes Followed', value: '12', icon: Users },
+        { label: 'Events Watched', value: '8', icon: Calendar },
+        { label: 'Videos Viewed', value: '156', icon: Video },
+        { label: 'Favorites', value: '24', icon: Star },
+      ].map((stat) => (
+        <div key={stat.label} className="bg-card border border-border p-4 rounded-xl">
+          <div className="flex items-center gap-3 mb-2">
+            <stat.icon className="h-5 w-5 text-primary" />
+            <span className="text-sm text-muted-foreground">{stat.label}</span>
+          </div>
+          <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+        </div>
+      ))}
+    </div>
+
+    {/* Followed Athletes */}
+    <h2 className="text-xl font-semibold mb-4 text-foreground">Athletes You Follow</h2>
+    <div className="grid md:grid-cols-3 gap-6">
+      {sampleAthletes.slice(0, 3).map((athlete) => (
+        <div key={athlete.id} className="bg-card border border-border p-4 rounded-xl">
+          <div className="flex items-center gap-4 mb-3">
+            <img src={athlete.avatar} alt={athlete.name} className="w-14 h-14 rounded-full object-cover" />
+            <div>
+              <h3 className="font-semibold text-foreground">{athlete.name}</h3>
+              <p className="text-sm text-primary">{athlete.sport}</p>
+            </div>
+          </div>
+          <Button variant="outline" className="w-full" size="sm">View Profile</Button>
+        </div>
+      ))}
+    </div>
+  </>
+);
+
 const ProfilePage: React.FC = () => {
   const { user } = useAuth();
 
@@ -262,6 +379,10 @@ const ProfilePage: React.FC = () => {
         return <OrganizerProfile user={user} />;
       case 'coach':
         return <CoachProfile user={user} />;
+      case 'creator':
+        return <CreatorProfile user={user} />;
+      case 'viewer':
+        return <ViewerProfile user={user} />;
       default:
         return <AthleteProfile user={user} />;
     }

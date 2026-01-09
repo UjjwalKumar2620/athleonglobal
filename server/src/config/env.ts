@@ -8,7 +8,7 @@ export const env = {
     // Server
     PORT: parseInt(process.env.PORT || '3001', 10),
     NODE_ENV: process.env.NODE_ENV || 'development',
-    FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:8080',
+    FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
 
     // Database
     DATABASE_URL: process.env.DATABASE_URL || '',
@@ -20,11 +20,14 @@ export const env = {
     // Stripe
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || '',
-    STRIPE_SUCCESS_URL: process.env.STRIPE_SUCCESS_URL || 'http://localhost:8080/dashboard?payment=success',
-    STRIPE_CANCEL_URL: process.env.STRIPE_CANCEL_URL || 'http://localhost:8080/pricing?payment=cancelled',
+    STRIPE_SUCCESS_URL: process.env.STRIPE_SUCCESS_URL || 'http://localhost:5173/dashboard?payment=success',
+    STRIPE_CANCEL_URL: process.env.STRIPE_CANCEL_URL || 'http://localhost:5173/pricing?payment=cancelled',
 
     // Google Maps
     GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY || '',
+
+    // Gemini AI
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || (process.env.NODE_ENV === 'development' ? 'AIzaSyDs0x6XGEu13erdACrEwjIOir0fBTvx9gs' : ''),
 
     // Platform
     PLATFORM_COMMISSION_PERCENT: parseInt(process.env.PLATFORM_COMMISSION_PERCENT || '5', 10),
