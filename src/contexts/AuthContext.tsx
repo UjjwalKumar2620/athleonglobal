@@ -39,14 +39,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const token = localStorage.getItem('athleon_token');
       const storedUser = localStorage.getItem('athleon_user');
 
-      if (token && storedUser) {
+      // If we have a stored user, use it immediately (don't block on API)
+      if (storedUser) {
         try {
-          // Try to verify token with backend
+          setUser(JSON.parse(storedUser));
+        } catch {
+          localStorage.removeItem('athleon_user');
+          localStorage.removeItem('athleon_token');
+        }
+      }
+
+      // Only try to verify with backend if we have a token
+      // Use AbortController for timeout
+      if (token && storedUser) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+
+        try {
           const response = await fetch('/api/auth/me', {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
+            signal: controller.signal,
           });
+          clearTimeout(timeoutId);
 
           if (response.ok) {
             const userData = await response.json();
@@ -59,31 +75,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               credits: userData.credits,
               subscription: userData.subscription,
             });
-          } else {
-            // Token invalid, but fallback to stored user for mock auth
-            try {
-              setUser(JSON.parse(storedUser));
-            } catch {
-              localStorage.removeItem('athleon_token');
-              localStorage.removeItem('athleon_user');
-            }
           }
+          // If response is not ok, we already set from storedUser above
         } catch {
-          // Backend not available, use stored user (mock auth mode)
+          // Backend not available or timeout, user is already set from storedUser
           console.log('Backend not available, using stored user data');
-          try {
-            setUser(JSON.parse(storedUser));
-          } catch {
-            localStorage.removeItem('athleon_token');
-            localStorage.removeItem('athleon_user');
-          }
-        }
-      } else if (storedUser) {
-        // Fallback to stored user if no token (for backward compatibility)
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch {
-          localStorage.removeItem('athleon_user');
         }
       }
 
