@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+  <script>
+    // Single Page Apps for GitHub Pages
+    // MIT License
+    // This script handles SPA routing on GitHub Pages by 
+    // redirecting all 404 requests to index.html with the path preserved
+    const pathSegmentsToKeep = 1; // Keep the repo name segment
+    const repo = location.pathname.split('/')[1];
+    const pathAfterRepo = location.pathname.replace('/' + repo, '');
+    const fullPath = pathAfterRepo + location.search + location.hash;
+    
+    // Redirect to index with the path stored in sessionStorage
+    sessionStorage.setItem('redirectPath', fullPath);
+    location.replace('/' + repo + '/');
+  </script>
+</head>
+<body>
+  Redirecting...
+</body>
+</html>
