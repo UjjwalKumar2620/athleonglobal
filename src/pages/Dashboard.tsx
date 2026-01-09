@@ -6,6 +6,7 @@ import { Trophy, Calendar, TrendingUp, Zap, Users, Star, Plus, UserSearch } from
 import { Button } from '@/components/ui/button';
 import { delhiEvents } from '@/data/events';
 import StarRating from '@/components/StarRating';
+import FamousAthletes from '@/components/FamousAthletes';
 
 const AthleteDashboard: React.FC<{ user: any }> = ({ user }) => {
   const quickActions = [
@@ -220,6 +221,108 @@ const CoachDashboard: React.FC<{ user: any }> = ({ user }) => {
   );
 };
 
+const CreatorDashboard: React.FC<{ user: any }> = ({ user }) => {
+  const stats = [
+    { label: 'Videos', value: 4, icon: TrendingUp },
+    { label: 'Total Views', value: '97.7K', icon: Users },
+    { label: 'Followers', value: '2.5K', icon: Star },
+    { label: 'Avg Rating', value: '4.8', icon: Trophy },
+  ];
+
+  return (
+    <>
+      {/* Stats Grid */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {stats.map((stat) => (
+          <div key={stat.label} className="bg-card border border-border p-4 rounded-xl">
+            <div className="flex items-center gap-3 mb-2">
+              <stat.icon className="h-5 w-5 text-primary" />
+              <span className="text-sm text-muted-foreground">{stat.label}</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-foreground">Quick Actions</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <Link to="/create">
+            <div className="bg-card border border-border p-6 rounded-xl hover:shadow-lg transition-all cursor-pointer text-center">
+              <Plus className="h-8 w-8 mx-auto mb-3 text-primary" />
+              <p className="font-medium text-foreground">Create Video</p>
+            </div>
+          </Link>
+          <Link to="/events">
+            <div className="bg-card border border-border p-6 rounded-xl hover:shadow-lg transition-all cursor-pointer text-center">
+              <Calendar className="h-8 w-8 mx-auto mb-3 text-green-500" />
+              <p className="font-medium text-foreground">View Events</p>
+            </div>
+          </Link>
+        </div>
+      </motion.div>
+
+      {/* CTA to Create */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-gradient-to-r from-primary to-accent p-8 rounded-2xl text-center">
+        <h2 className="text-2xl font-bold mb-2 text-primary-foreground">Share Your Sports Knowledge</h2>
+        <p className="text-primary-foreground/80 mb-6">Create training videos and help athletes improve their game</p>
+        <Link to="/create">
+          <Button size="lg" variant="secondary">
+            <Plus className="h-5 w-5 mr-2" />
+            Create Content
+          </Button>
+        </Link>
+      </motion.div>
+    </>
+  );
+};
+
+const ViewerDashboard: React.FC<{ user: any }> = ({ user }) => {
+  const stats = [
+    { label: 'Athletes Followed', value: 12, icon: Users },
+    { label: 'Events Watched', value: 5, icon: Calendar },
+    { label: 'Videos Viewed', value: 42, icon: TrendingUp },
+    { label: 'Favorites', value: 8, icon: Star },
+  ];
+
+  return (
+    <>
+      {/* Stats Grid */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {stats.map((stat) => (
+          <div key={stat.label} className="bg-card border border-border p-4 rounded-xl">
+            <div className="flex items-center gap-3 mb-2">
+              <stat.icon className="h-5 w-5 text-primary" />
+              <span className="text-sm text-muted-foreground">{stat.label}</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-foreground">Quick Actions</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <Link to="/athletes">
+            <div className="bg-card border border-border p-6 rounded-xl hover:shadow-lg transition-all cursor-pointer text-center">
+              <Users className="h-8 w-8 mx-auto mb-3 text-primary" />
+              <p className="font-medium text-foreground">Discover Athletes</p>
+            </div>
+          </Link>
+          <Link to="/events">
+            <div className="bg-card border border-border p-6 rounded-xl hover:shadow-lg transition-all cursor-pointer text-center">
+              <Calendar className="h-8 w-8 mx-auto mb-3 text-green-500" />
+              <p className="font-medium text-foreground">Browse Events</p>
+            </div>
+          </Link>
+        </div>
+      </motion.div>
+    </>
+  );
+};
+
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
 
@@ -229,8 +332,27 @@ const Dashboard: React.FC = () => {
         return <OrganizerDashboard user={user} />;
       case 'coach':
         return <CoachDashboard user={user} />;
+      case 'creator':
+        return <CreatorDashboard user={user} />;
+      case 'viewer':
+        return <ViewerDashboard user={user} />;
       default:
         return <AthleteDashboard user={user} />;
+    }
+  };
+
+  const getWelcomeMessage = () => {
+    switch (user?.role) {
+      case 'organizer':
+        return 'Manage your events and grow your audience';
+      case 'coach':
+        return 'Discover talented athletes for your team';
+      case 'creator':
+        return 'Share your sports knowledge with the world';
+      case 'viewer':
+        return 'Explore athletes and events you love';
+      default:
+        return 'Ready to elevate your game today?';
     }
   };
 
@@ -242,12 +364,11 @@ const Dashboard: React.FC = () => {
           <h1 className="text-3xl md:text-4xl font-display font-bold mb-2 text-foreground">
             Welcome back, <span className="text-primary">{user?.name?.split(' ')[0] || 'Champion'}</span>!
           </h1>
-          <p className="text-muted-foreground">
-            {user?.role === 'organizer' ? 'Manage your events and grow your audience' : 
-             user?.role === 'coach' ? 'Discover talented athletes for your team' :
-             'Ready to elevate your game today?'}
-          </p>
+          <p className="text-muted-foreground">{getWelcomeMessage()}</p>
         </motion.div>
+
+        {/* Famous Athletes Section - For All Users */}
+        <FamousAthletes />
 
         {renderDashboard()}
       </div>

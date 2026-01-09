@@ -11,52 +11,52 @@ import athleonLogo from '@/assets/athleon-logo.jpeg';
 const primaryColor = 'hsl(198,82%,51%)';
 
 const features = [
-  { 
-    icon: Video, 
-    title: 'AI Video Analysis', 
+  {
+    icon: Video,
+    title: 'AI Video Analysis',
     description: 'Upload your performance videos and get instant AI-powered insights on technique, form, and areas for improvement.',
     tag: 'Powered by AI',
   },
-  { 
-    icon: MapPin, 
-    title: 'Discover Events', 
+  {
+    icon: MapPin,
+    title: 'Discover Events',
     description: 'Find nearby sports events, tournaments, and training camps. Register and compete with athletes worldwide.',
     tag: 'Geo-based',
   },
-  { 
-    icon: UserSearch, 
-    title: 'Scout Network', 
+  {
+    icon: UserSearch,
+    title: 'Scout Network',
     description: 'Connect with professional scouts and coaches. Get discovered based on your performance metrics.',
     tag: 'Networking',
   },
-  { 
-    icon: BarChart3, 
-    title: 'Performance Tracking', 
+  {
+    icon: BarChart3,
+    title: 'Performance Tracking',
     description: 'Track your progress with detailed analytics. Compare stats across matches and monitor improvement.',
     tag: 'Analytics',
   },
 ];
 
 const testimonials = [
-  { 
-    name: 'Marcus Johnson', 
-    role: 'Professional Basketball Player', 
+  {
+    name: 'Marcus Johnson',
+    role: 'Professional Basketball Player',
     sport: 'Basketball',
     content: "Athleon Global's AI analysis helped me identify weaknesses in my shooting form that I never noticed. Within 3 months, my accuracy improved by 15%.",
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
     rating: 5,
   },
-  { 
-    name: 'Sarah Chen', 
-    role: 'Olympic Swimmer', 
+  {
+    name: 'Sarah Chen',
+    role: 'Olympic Swimmer',
     sport: 'Swimming',
     content: "The event discovery feature connected me with international competitions I would have never found otherwise. This platform is a game-changer.",
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
     rating: 5,
   },
-  { 
-    name: 'David Rodriguez', 
-    role: 'Soccer Coach', 
+  {
+    name: 'David Rodriguez',
+    role: 'Soccer Coach',
     sport: 'Soccer',
     content: "As a scout, I can find talented athletes in my area instantly. The performance scores help me make data-driven decisions on recruitment.",
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
@@ -138,7 +138,7 @@ const PerformanceSection: React.FC = () => (
           <span className="inline-block bg-[#1CA6E6]/10 text-[#1CA6E6] text-sm font-semibold px-4 py-1.5 rounded-full mb-6 font-display">AI-Powered Insights</span>
           <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 text-white">Get Detailed <span className="text-[#1CA6E6]">Performance Analysis</span></h2>
           <p className="text-[hsl(220,10%,55%)] mb-8">Our AI analyzes your performance videos and provides actionable insights to help you improve faster.</p>
-          
+
           <div className="bg-[hsla(220,18%,12%,0.8)] backdrop-blur-xl border border-[hsla(220,15%,25%,0.5)] p-6 rounded-2xl">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -150,7 +150,7 @@ const PerformanceSection: React.FC = () => (
                 <span className="text-white/70 text-xs">/100</span>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               {performanceStats.map((stat) => (
                 <div key={stat.skill}>
@@ -170,7 +170,7 @@ const PerformanceSection: React.FC = () => (
                 </div>
               ))}
             </div>
-            
+
             <div className="mt-6 p-4 bg-[hsl(220,15%,15%)] rounded-xl border border-[hsla(220,15%,25%,0.5)]">
               <div className="flex items-center gap-2 mb-2">
                 <Zap className="h-4 w-4 text-[#1CA6E6]" />
@@ -180,7 +180,7 @@ const PerformanceSection: React.FC = () => (
             </div>
           </div>
         </motion.div>
-        
+
         <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="relative">
           <div className="aspect-square rounded-3xl bg-gradient-to-br from-[#1CA6E6] to-[hsl(205,80%,40%)] p-8 flex items-center justify-center">
             <div className="text-center text-white">
@@ -208,13 +208,13 @@ const TestimonialsSection: React.FC = () => (
           <motion.div key={testimonial.name} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.1 }} className="bg-[hsla(220,20%,15%,0.6)] backdrop-blur-xl border border-[hsla(220,15%,25%,0.5)] p-8 rounded-2xl">
             <Quote className="h-10 w-10 text-[#1CA6E6] mb-6" />
             <p className="text-[hsl(220,10%,70%)] mb-6 leading-relaxed">"{testimonial.content}"</p>
-            
+
             <div className="flex items-center gap-1 mb-6">
               {Array.from({ length: testimonial.rating }).map((_, i) => (
                 <Star key={i} className="h-5 w-5 text-[#1CA6E6] fill-[#1CA6E6]" />
               ))}
             </div>
-            
+
             <div className="flex items-center gap-4">
               <img src={testimonial.avatar} alt={testimonial.name} className="w-12 h-12 rounded-full object-cover" />
               <div>
@@ -238,10 +238,10 @@ const CTASection: React.FC = () => (
           <Zap className="h-4 w-4 text-[#1CA6E6]" />
           <span className="text-sm font-semibold text-white font-display">Join 50,000+ Athletes Today</span>
         </span>
-        
+
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-6 text-white">Ready to Take Your Athletic Career to the <span className="text-[#1CA6E6]">Next Level?</span></h2>
         <p className="text-[hsl(220,10%,55%)] mb-10 text-lg max-w-xl mx-auto">Create your free profile today and unlock AI-powered insights, connect with scouts, and discover events near you.</p>
-        
+
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
           <Link to="/auth?mode=signup">
             <Button size="xl" className="bg-[#1CA6E6] hover:bg-[#1CA6E6]/90 text-white group font-display font-semibold">
@@ -255,7 +255,7 @@ const CTASection: React.FC = () => (
             </Button>
           </Link>
         </div>
-        
+
         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-[hsl(220,10%,55%)]">
           <span className="flex items-center gap-2"><Check className="h-4 w-4 text-[#1CA6E6]" /> No credit card required</span>
           <span className="flex items-center gap-2"><Check className="h-4 w-4 text-[#1CA6E6]" /> Free forever plan</span>

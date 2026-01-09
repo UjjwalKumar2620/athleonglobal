@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, MapPin, Mail, Video, Phone, Filter, Star } from 'lucide-react';
+import { Search, MapPin, Mail, Video, Plus, Filter, Star, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { sampleAthletes, Athlete } from '@/data/athletes';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import FamousAthletes from '@/components/FamousAthletes';
 import {
   Select,
   SelectContent,
@@ -39,9 +40,9 @@ const AthleteCard: React.FC<{ athlete: Athlete; onViewProfile: (athlete: Athlete
         </div>
       </div>
     </div>
-    
+
     <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{athlete.bio}</p>
-    
+
     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
       <span className="flex items-center gap-1">
         <Star className="h-4 w-4 text-primary" />
@@ -49,14 +50,14 @@ const AthleteCard: React.FC<{ athlete: Athlete; onViewProfile: (athlete: Athlete
       </span>
       <span>{athlete.experience} exp</span>
     </div>
-    
+
     <div className="flex gap-2">
       <Button variant="outline" className="flex-1" onClick={() => onViewProfile(athlete)}>
         View Profile
       </Button>
       <Button variant="default" className="flex-1">
-        <Phone className="h-4 w-4 mr-2" />
-        Contact
+        <Plus className="h-4 w-4 mr-2" />
+        Connect
       </Button>
     </div>
   </motion.div>
@@ -80,7 +81,7 @@ const AthleteProfileModal: React.FC<{ athlete: Athlete | null; open: boolean; on
         <DialogHeader>
           <DialogTitle className="text-foreground">Athlete Profile</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           {/* Profile Header */}
           <div className="flex items-start gap-4">
@@ -164,8 +165,8 @@ const AthleteProfileModal: React.FC<{ athlete: Athlete | null; open: boolean; on
           </div>
 
           <Button className="w-full" onClick={handleContact}>
-            <Phone className="h-4 w-4 mr-2" />
-            Contact {athlete.name}
+            <Plus className="h-4 w-4 mr-2" />
+            Connect with {athlete.name}
           </Button>
         </div>
       </DialogContent>
@@ -182,7 +183,7 @@ const AthletesPage: React.FC = () => {
 
   const filteredAthletes = sampleAthletes.filter((athlete) => {
     const matchesSearch = athlete.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         athlete.location.toLowerCase().includes(searchQuery.toLowerCase());
+      athlete.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSport = selectedSport === 'all' || athlete.sport === selectedSport;
     return matchesSearch && matchesSport;
   });
@@ -201,7 +202,7 @@ const AthletesPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          className="text-center mb-8"
         >
           <h1 className="text-3xl md:text-4xl font-display font-bold mb-4 text-foreground">
             Discover <span className="text-primary">Athletes</span>
@@ -210,6 +211,9 @@ const AthletesPage: React.FC = () => {
             Find talented athletes for your team or scouting needs
           </p>
         </motion.div>
+
+        {/* Famous Athletes Section */}
+        <FamousAthletes />
 
         {/* Featured Athletes */}
         <motion.div
@@ -225,6 +229,7 @@ const AthletesPage: React.FC = () => {
             ))}
           </div>
         </motion.div>
+
 
         {/* Filters */}
         <motion.div
@@ -281,10 +286,10 @@ const AthletesPage: React.FC = () => {
           </div>
         )}
 
-        <AthleteProfileModal 
-          athlete={selectedAthlete} 
-          open={modalOpen} 
-          onClose={() => setModalOpen(false)} 
+        <AthleteProfileModal
+          athlete={selectedAthlete}
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
         />
       </div>
     </div>

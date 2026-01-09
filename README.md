@@ -1,3 +1,46 @@
+# Athleon Global - Sports Networking Platform
+
+A full-stack sports networking platform built with React, TypeScript, Express, and PostgreSQL.
+
+## 🚀 Quick Start - Localhost Development
+
+**For detailed setup instructions, see [LOCALHOST_SETUP.md](./LOCALHOST_SETUP.md)**
+
+### Quick Setup:
+
+```bash
+# 1. Install dependencies
+npm install
+cd server && npm install && cd ..
+
+# 2. Set up database (PostgreSQL required)
+# Create a .env file in server/ directory with DATABASE_URL
+
+# 3. Initialize database
+cd server
+npx prisma generate
+npx prisma db push
+npm run seed  # Optional: seed sample data
+cd ..
+
+# 4. Install concurrently (for running both servers)
+npm install --save-dev concurrently
+
+# 5. Start both servers
+npm run dev:full
+```
+
+- **Frontend**: http://localhost:8080
+- **Backend API**: http://localhost:3001
+
+### Demo Accounts (after seeding):
+- Athlete: `athlete@athleon.com` / `password123`
+- Organizer: `organizer@athleon.com` / `password123`
+- Coach: `coach@athleon.com` / `password123`
+- Viewer: `viewer@athleon.com` / `password123`
+
+---
+
 # Welcome to your Lovable project
 
 ## Project info
