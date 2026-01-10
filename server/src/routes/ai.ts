@@ -280,6 +280,8 @@ router.post('/chat', authenticate, async (req: Request, res: Response) => {
             userName: req.user!.name,
             recentScore: recentAnalysis?.score || undefined,
             skills: (recentAnalysis?.skillBreakdown as any[]) || undefined,
+            videoTitle: recentAnalysis?.videoTitle || undefined,
+            insights: (recentAnalysis?.insights as string[]) || undefined,
         });
 
         res.json({
@@ -289,7 +291,7 @@ router.post('/chat', authenticate, async (req: Request, res: Response) => {
     } catch (error) {
         console.error('AI chat error:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to generate response';
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Failed to generate response',
             message: errorMessage,
             details: env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined

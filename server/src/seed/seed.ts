@@ -1,9 +1,13 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const prisma = new PrismaClient();
 
-// Delhi venues with coordinates
+// Delhi venues with coordinates (kept same)
 const venues = [
     { name: 'Feroz Shah Kotla Stadium', address: 'Bahadur Shah Zafar Marg, Delhi 110002', latitude: 28.6377, longitude: 77.2433, capacity: 35000 },
     { name: 'Jawaharlal Nehru Stadium', address: 'Lodhi Road, New Delhi 110003', latitude: 28.5839, longitude: 77.2320, capacity: 60000 },
@@ -17,7 +21,7 @@ const venues = [
     { name: 'SPM Swimming Pool Complex', address: 'RK Khanna Tennis Stadium, New Delhi', latitude: 28.5678, longitude: 77.1856, capacity: 2000 },
 ];
 
-// Subscription plans
+// Subscription plans (kept same)
 const plans = [
     { name: 'Free', slug: 'free', price: 0, roleAccess: 'athlete', features: ['Basic profile', '2 AI analyses/month', 'Browse free events', 'Basic stats'] },
     { name: 'Athlete Pro', slug: 'athlete_pro', price: 24900, roleAccess: 'athlete', features: ['Enhanced profile', 'Unlimited AI analyses', 'Advanced insights', 'Profile analytics', 'Featured in search', 'Priority registration', 'AI Coach chatbot'] },
@@ -25,7 +29,7 @@ const plans = [
     { name: 'Coach Pro', slug: 'coach_pro', price: 99900, roleAccess: 'coach', features: ['Advanced search filters', 'Access top-ranked players', 'Direct athlete contact', 'Video comparison tools', 'Bulk analytics', 'Talent pipeline', 'Premium support'] },
 ];
 
-// Sample events
+// Sample events (kept same)
 const sampleEvents = [
     { title: 'Delhi Premier Cricket League 2026', sport: 'Cricket', description: 'Annual T20 cricket tournament featuring top teams from Delhi NCR.', date: '2026-02-15', time: '09:00 AM', price: 50000, isPaid: true, maxCapacity: 120, category: 'tournament', image: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800' },
     { title: 'Football Fever Championship', sport: 'Football', description: 'Inter-college football championship with teams from all major universities.', date: '2026-02-20', time: '10:00 AM', price: 0, isPaid: false, maxCapacity: 200, category: 'tournament', image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800' },
@@ -44,6 +48,13 @@ const sampleEvents = [
     { title: 'Archery Open Competition', sport: 'Archery', description: 'Open archery competition for recurve and compound bow.', date: '2026-04-25', time: '08:00 AM', price: 35000, isPaid: true, maxCapacity: 50, category: 'tournament', image: 'https://images.unsplash.com/photo-1511719105906-89dfe3bb14c4?w=800' },
     { title: 'Esports Gaming Tournament', sport: 'Esports', description: 'Multi-game esports tournament featuring popular titles.', date: '2026-05-01', time: '11:00 AM', price: 0, isPaid: false, maxCapacity: 200, category: 'tournament', image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800' },
 ];
+
+const sports = ['Cricket', 'Football', 'Badminton', 'Tennis', 'Swimming', 'Basketball', 'Athletics', 'Hockey', 'Table Tennis', 'Volleyball'];
+const names = ['Aarav', 'Vihaan', 'Kabir', 'Vivaan', 'Aditya', 'Reyansh', 'Muhammad', 'Avyaan', 'Amit', 'Rahul', 'Ananya', 'Diya', 'Saanvi', 'Shanaya', 'Kiara', 'Myra', 'Aadhya', 'Pari', 'Sita', 'Gita', 'Rohan', 'Kunal', 'Suresh', 'Ramesh', 'Priya', 'Neha', 'Pooja', 'Riya', 'Sneha', 'Tanvi'];
+const surnames = ['Sharma', 'Verma', 'Singh', 'Gupta', 'Patel', 'Kumar', 'Das', 'Khan', 'Reddy', 'Rao', 'Yadav', 'Jha', 'Mishra', 'Pandey', 'Chopra', 'Malhotra', 'Bhatia', 'Saxena', 'Mehta', 'Jain', 'Agarwal', 'Bansal', 'Thakur', 'Choudhary', 'Tiwari', 'Dubey', 'Sinha', 'Roy', 'Chakraborty', 'Nair'];
+
+// Helper to pick random item
+const random = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
 async function main() {
     console.log('🌱 Starting database seed...');
@@ -89,10 +100,71 @@ async function main() {
     );
     console.log(`Created ${createdVenues.length} venues`);
 
-    // Create demo organizer
-    console.log('Creating demo users...');
     const hashedPassword = await bcrypt.hash('password123', 12);
 
+    // Create 30 Athletes
+    console.log('Creating 30 athletes with rich data...');
+    for (let i = 0; i < 30; i++) {
+        const firstName = random(names);
+        const lastName = random(surnames);
+        const sport = random(sports);
+
+        const user = await prisma.user.create({
+            data: {
+                email: `athlete${i + 1}@athleon.com`,
+                password: hashedPassword,
+                name: `${firstName} ${lastName}`,
+                role: 'athlete',
+                aadhaarVerified: Math.random() > 0.3, // 70% verified
+                avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${firstName} ${lastName}`,
+            },
+        });
+
+        const experienceYears = Math.floor(Math.random() * 8) + 1;
+
+        await prisma.athleteProfile.create({
+            data: {
+                userId: user.id,
+                sports: [sport],
+                position: ['Forward', 'Defender', 'Midfielder', 'Batsman', 'Bowler', 'Striker', 'Guard'][Math.floor(Math.random() * 7)],
+                location: random(['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Chandigarh']),
+                bio: `Passionate ${sport} player with ${experienceYears} years of experience. Dedicated to improving skills and competing at the highest level.`,
+                experience: `${experienceYears} years`,
+                achievements: [
+                    `State Level ${sport} Champion 2024`,
+                    `Best Player of the Tournament - District Cup`,
+                    `Captain of College Team`
+                ],
+                certificates: ['https://example.com/cert1.pdf', 'https://example.com/cert2.jpg'],
+                videos: [
+                    'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Placeholder
+                    'https://www.youtube.com/watch?v=ScMzIvxBSi4'
+                ],
+                rating: parseFloat((3 + Math.random() * 2).toFixed(1)),
+                followers: Math.floor(Math.random() * 5000),
+                following: Math.floor(Math.random() * 500),
+            },
+        });
+
+        // Add performance data
+        const profile = await prisma.athleteProfile.findUnique({ where: { userId: user.id } });
+        if (profile) {
+            await prisma.performanceData.create({
+                data: {
+                    athleteProfileId: profile.id,
+                    overallScore: 60 + Math.random() * 35,
+                    speedScore: 50 + Math.random() * 50,
+                    techniqueScore: 50 + Math.random() * 50,
+                    enduranceScore: 50 + Math.random() * 50,
+                    accuracyScore: 50 + Math.random() * 50,
+                    powerScore: 50 + Math.random() * 50,
+                    agilityScore: 50 + Math.random() * 50,
+                }
+            });
+        }
+    }
+
+    // Create demo organizer
     const organizer = await prisma.user.create({
         data: {
             email: 'organizer@athleon.com',
@@ -103,58 +175,7 @@ async function main() {
         },
     });
 
-    // Create demo athlete
-    const athlete = await prisma.user.create({
-        data: {
-            email: 'athlete@athleon.com',
-            password: hashedPassword,
-            name: 'Virat Singh',
-            role: 'athlete',
-            aadhaarVerified: true,
-        },
-    });
-
-    // Create athlete profile
-    await prisma.athleteProfile.create({
-        data: {
-            userId: athlete.id,
-            sports: ['Cricket'],
-            position: 'Batsman',
-            location: 'Delhi, India',
-            bio: 'Aggressive opening batsman with exceptional timing and footwork.',
-            experience: '8 years',
-            achievements: ['Delhi U-19 Captain', 'Ranji Trophy Winner', 'Best Batsman 2024'],
-            certificates: [],
-            videos: [],
-            rating: 4.8,
-            followers: 2450,
-            following: 180,
-        },
-    });
-
-    // Create athlete credits wallet
-    await prisma.aICreditsWallet.create({
-        data: {
-            userId: athlete.id,
-            balance: 50,
-        },
-    });
-
-    // Subscribe athlete to pro plan
-    const athleteProPlan = createdPlans.find((p) => p.slug === 'athlete_pro');
-    if (athleteProPlan) {
-        await prisma.subscription.create({
-            data: {
-                userId: athlete.id,
-                planId: athleteProPlan.id,
-                status: 'active',
-                currentPeriodStart: new Date(),
-                currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            },
-        });
-    }
-
-    // Create demo coach
+    // Create demo coach (for Scout testing)
     const coach = await prisma.user.create({
         data: {
             email: 'coach@athleon.com',
@@ -176,9 +197,51 @@ async function main() {
         },
     });
 
-    console.log('Created 4 demo users');
+    // Create detailed main demo athlete
+    const mainAthlete = await prisma.user.create({
+        data: {
+            email: 'athlete@athleon.com',
+            password: hashedPassword,
+            name: 'Virat Singh',
+            role: 'athlete',
+            aadhaarVerified: true,
+        },
+    });
 
-    // Create events
+    await prisma.athleteProfile.create({
+        data: {
+            userId: mainAthlete.id,
+            sports: ['Cricket'],
+            position: 'Batsman',
+            location: 'Delhi, India',
+            bio: 'Aggressive opening batsman with exceptional timing and footwork.',
+            experience: '8 years',
+            achievements: ['Delhi U-19 Captain', 'Ranji Trophy Winner', 'Best Batsman 2024'],
+            certificates: [],
+            videos: [],
+            rating: 4.8,
+            followers: 2450,
+            following: 180,
+        },
+    });
+
+    // Subscribe main athlete to pro plan
+    const athleteProPlan = createdPlans.find((p) => p.slug === 'athlete_pro');
+    if (athleteProPlan) {
+        await prisma.subscription.create({
+            data: {
+                userId: mainAthlete.id,
+                planId: athleteProPlan.id,
+                status: 'active',
+                currentPeriodStart: new Date(),
+                currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            },
+        });
+    }
+
+    console.log('Created 30+ demo users');
+
+    // Create events (same logic)
     console.log('Creating sample events...');
     const createdEvents = await Promise.all(
         sampleEvents.map((event, index) => {
@@ -211,11 +274,6 @@ async function main() {
     console.log(`Created ${createdEvents.length} events`);
 
     console.log('\n✅ Seed completed successfully!');
-    console.log('\n📧 Demo accounts:');
-    console.log('   Athlete: athlete@athleon.com / password123');
-    console.log('   Organizer: organizer@athleon.com / password123');
-    console.log('   Coach: coach@athleon.com / password123');
-    console.log('   Viewer: viewer@athleon.com / password123');
 }
 
 main()

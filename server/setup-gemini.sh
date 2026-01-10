@@ -2,7 +2,7 @@
 
 # Script to add Gemini API key to .env file
 
-GEMINI_API_KEY="AIzaSyDs0x6XGEu13erdACrEwjIOir0fBTvx9gs"
+GEMINI_API_KEY="AIzaSyCBiLxV7d2605jDNMMsE2ONg4A9aUN9mNM"
 ENV_FILE=".env"
 
 # Check if .env exists

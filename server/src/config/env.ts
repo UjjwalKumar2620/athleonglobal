@@ -26,11 +26,17 @@ export const env = {
     // Google Maps
     GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY || '',
 
-    // Gemini AI
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY || (process.env.NODE_ENV === 'development' ? 'AIzaSyDs0x6XGEu13erdACrEwjIOir0fBTvx9gs' : ''),
+    // OpenRouter AI
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
 
     // Platform
     PLATFORM_COMMISSION_PERCENT: parseInt(process.env.PLATFORM_COMMISSION_PERCENT || '5', 10),
+
+    // Email
+    SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
+    SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
+    SMTP_USER: process.env.SMTP_USER || '',
+    SMTP_PASS: process.env.SMTP_PASS || '',
 };
 
 // Validate required env vars in production

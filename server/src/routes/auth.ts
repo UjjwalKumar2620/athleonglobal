@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { authenticate, generateToken } from '../middleware/auth.js';
+import { emailService } from '../services/email.js';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -28,6 +29,15 @@ const otpSchema = z.object({
 const verifyOtpSchema = z.object({
     aadhaarNumber: z.string().length(12),
     phone: z.string().length(10),
+    otp: z.string().length(6),
+});
+
+const emailOtpSchema = z.object({
+    email: z.string().email(),
+});
+
+const verifyEmailOtpSchema = z.object({
+    email: z.string().email(),
     otp: z.string().length(6),
 });
 
@@ -252,6 +262,79 @@ router.post('/verify-otp', authenticate, async (req: Request, res: Response) => 
             return;
         }
         res.status(500).json({ error: 'Verification failed' });
+    }
+});
+
+/**
+ * POST /auth/send-email-otp
+ * Send OTP to email for verification
+ */
+router.post('/send-email-otp', async (req: Request, res: Response) => {
+    try {
+        const data = emailOtpSchema.parse(req.body);
+
+        // Generate 6 digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Store OTP with expiry
+        const key = `email-${data.email}`;
+        otpStore.set(key, {
+            otp,
+            expires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+        });
+
+        // Send Email
+        const sent = await emailService.sendEmailOTP(data.email, otp);
+
+        if (!sent) {
+            res.status(500).json({ error: 'Failed to send email' });
+            return;
+        }
+
+        res.json({
+            message: 'OTP sent successfully to your email',
+            // Dev mode helpful info, remove in production if strict
+            devNote: process.env.NODE_ENV === 'development' ? 'Check server logs for mock OTP if no creds' : undefined
+        });
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            res.status(400).json({ error: 'Validation failed', details: error.errors });
+            return;
+        }
+        res.status(500).json({ error: 'Failed to process request' });
+    }
+});
+
+/**
+ * POST /auth/verify-email-otp
+ * Verify Email OTP
+ */
+router.post('/verify-email-otp', async (req: Request, res: Response) => {
+    try {
+        const data = verifyEmailOtpSchema.parse(req.body);
+
+        const key = `email-${data.email}`;
+        const stored = otpStore.get(key);
+
+        if (!stored || stored.otp !== data.otp || new Date() > stored.expires) {
+            res.status(400).json({ error: 'Invalid or expired OTP' });
+            return;
+        }
+
+        // OTP Valid
+        otpStore.delete(key);
+
+        res.json({
+            message: 'Email verified successfully',
+            verified: true,
+            email: data.email
+        });
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            res.status(400).json({ error: 'Validation failed', details: error.errors });
+            return;
+        }
+        res.status(500).json({ error: 'Failed to verify OTP' });
     }
 });
 
