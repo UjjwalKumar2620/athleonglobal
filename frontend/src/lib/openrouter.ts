@@ -29,7 +29,8 @@ interface OpenRouterResponse {
 
 export async function chatWithOpenRouter(userMessage: string, conversationHistory: string[] = []): Promise<string> {
     if (!OPENROUTER_API_KEY) {
-        throw new Error('OpenRouter API key not configured. Please add VITE_OPENROUTER_API_KEY to your .env file.');
+        console.warn('OpenRouter API Key missing. Returning offline response.');
+        return "I'm currently in Offline Mode (API Key missing). \n\nI can still help with general advice:\n- Focus on consistency.\n- Stay hydrated.\n- Analyze your game footage.\n\n(Please configure the VITE_OPENROUTER_API_KEY to enable full AI intelligence.)";
     }
 
     // Convert legacy conversation history format to messages array if needed

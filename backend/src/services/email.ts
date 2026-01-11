@@ -28,8 +28,9 @@ class EmailService {
     }
 
     async sendEmailOTP(email: string, otp: string): Promise<boolean> {
-        if (!env.SMTP_USER || !env.SMTP_PASS) {
-            console.warn('⚠️ SMTP credentials not configured. Mocking email send.');
+        // If credentials are missing or default, use Mock Mode
+        if (!env.SMTP_USER || !env.SMTP_PASS || env.SMTP_USER === 'user@gmail.com') {
+            console.log('⚠️ SMTP not configured. Using MOCK EMAIL SERVICE.');
             console.log(`[MOCK EMAIL] To: ${email} | OTP: ${otp}`);
             return true;
         }
