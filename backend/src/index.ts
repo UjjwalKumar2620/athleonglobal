@@ -17,6 +17,7 @@ validateEnv();
 
 const app: Express = express();
 
+// Force deployment - Updated: 2026-01-11 19:05 IST
 // CORS configuration
 app.use(cors({
     origin: env.NODE_ENV === 'development'
