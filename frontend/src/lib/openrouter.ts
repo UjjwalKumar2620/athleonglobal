@@ -1,4 +1,5 @@
 // OpenRouter AI Service (Refactored to use Backend Proxy)
+import { apiClient } from './api';
 
 interface OpenRouterResponse {
     message?: string;
@@ -31,14 +32,7 @@ export async function chatWithOpenRouter(userMessage: string, conversationHistor
     }
 
     try {
-        const response = await fetch('/api/ai/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ message: userMessage }) // Backend handles context building
-        });
+        const response = await apiClient.post('/api/ai/chat', { message: userMessage }, token);
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -61,17 +55,11 @@ export async function analyzeVideoWithOpenRouter(sport: string, videoDescription
     }
 
     try {
-        const response = await fetch('/api/ai/analyze-text', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                sport,
-                description: videoDescription
-            })
-        });
+        const response = await apiClient.post(
+            '/api/ai/analyze-text',
+            { sport, description: videoDescription },
+            token
+        );
 
         if (!response.ok) {
             const errorData = await response.json();

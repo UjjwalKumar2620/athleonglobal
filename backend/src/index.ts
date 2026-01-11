@@ -19,9 +19,13 @@ const app: Express = express();
 
 // CORS configuration
 app.use(cors({
-    origin: env.NODE_ENV === 'development' 
+    origin: env.NODE_ENV === 'development'
         ? ['http://localhost:5173', 'http://localhost:8080', env.FRONTEND_URL]
-        : env.FRONTEND_URL,
+        : [
+            env.FRONTEND_URL,
+            'https://ujjwalkumar2620.github.io',
+            /\.github\.io$/  // Allow all GitHub Pages subdomains
+        ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
