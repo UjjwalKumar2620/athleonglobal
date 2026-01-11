@@ -34,12 +34,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create .env file
-        run: |
-          echo "VITE_OPENROUTER_API_KEY=${{ secrets.VITE_OPENROUTER_API_KEY }}" > .env
-      
       - name: Build
-        run: npm run build
+        run: VITE_OPENROUTER_API_KEY=${{ secrets.VITE_OPENROUTER_API_KEY }} npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
